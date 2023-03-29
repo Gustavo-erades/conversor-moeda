@@ -92,3 +92,6 @@ button:hover{
     padding: 5px;
     border: 5px dashed rgb(114, 114, 114);
 }
+#aviso{
+    margin-top: 10px;
+}
