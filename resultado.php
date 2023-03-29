@@ -2,6 +2,9 @@
     //pega a data atual
     $fuso= new DateTimeZone('America/Sao_Paulo');
     $data=new DateTime('now', $fuso);
+    //pega a data atual para usar a API do Banco Central Brasileiro
+    $inicio=date("m-d-Y", strtotime("-7 days"));
+    $fim=date("m-d-Y");
     //pega o número digitado pelo usuário
     $num=isset($_POST["num"])?$_POST["num"]:"";
     //pega a opção selecionada pelo usuário
@@ -12,21 +15,31 @@
     //cálculo e armazenamento do resultado
     if($opcao!="" && $num!=""){
         if($opcao=="dolar"){
+            // URL para Api para pegar valor do dólar direto do Banco Central do Brasil
+            $url_dolar='https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial=\''.$inicio.'\'&@dataFinalCotacao=\''.$fim.'\'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json&$select=cotacaoCompra,dataHoraCotacao';
+            $dados=json_decode(file_get_contents($url_dolar), true);
+            $cotacao= $dados["value"][0]["cotacaoCompra"];
+            //segue com o cálculo normal
             $nome_moeda="Dólar";
             $sigla_moeda="USD";
-            $cotacao=5.25;
             $moeda=$num/$cotacao;
             $resultado=$moeda;
         }elseif($opcao=="euro"){
+            // URL para Api para pegar valor do dólar direto do Banco Central do Brasil
+            $url_euro='https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda=\'EUR\'&@dataInicial=\''.$inicio.'\'&@dataFinalCotacao=\''.$fim.'\'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json&$select=cotacaoCompra,dataHoraCotacao';
+            $dados=json_decode(file_get_contents($url_euro), true);
+            $cotacao= $dados["value"][0]["cotacaoCompra"];
             $nome_moeda="Euro";
             $sigla_moeda="EUR";
-            $cotacao=5.66;
             $moeda=$num/$cotacao;
             $resultado=$moeda;
         }elseif($opcao=="libra"){
+            // URL para Api para pegar valor do dólar direto do Banco Central do Brasil
+            $url_libra='https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda=\'GBP\'&@dataInicial=\''.$inicio.'\'&@dataFinalCotacao=\''.$fim.'\'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json&$select=cotacaoCompra,dataHoraCotacao';
+            $dados=json_decode(file_get_contents($url_libra), true);
+            $cotacao= $dados["value"][0]["cotacaoCompra"];
             $nome_moeda="Libra";
             $sigla_moeda="GBP";
-            $cotacao=6.42;
             $moeda=$num/$cotacao;
             $resultado=$moeda;
         }
@@ -62,6 +75,7 @@
            </p>
            <button onclick="javascript:history.go(-1);">Voltar</button>
         </div>
+        <div id="aviso"><b>OBS:</b> A <b>cotação</b> utilizada vem da API do <b>Banco Central do Brasil<b></div>
     </div>
 </body>
 </html>
