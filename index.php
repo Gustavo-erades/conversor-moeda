@@ -1,3 +1,23 @@
+<?php
+    //consumir API do Banco Central para pegar o valor de câmbio das moedas em tempo real
+    //pegar a data
+    $inicio=date("m-d-Y",strtotime("-7 days"));
+    $fim=date("m-d-Y");
+    //dólar
+    $url_dolar='https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarPeriodo(dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@dataInicial=\''.$inicio.'\'&@dataFinalCotacao=\''.$fim.'\'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json&$select=cotacaoCompra,dataHoraCotacao';
+    $dados_dolar=json_decode(file_get_contents($url_dolar), true);
+    $cotacao_dolar=$dados_dolar["value"][0]["cotacaoCompra"];
+    //euro
+    $url_euro='https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda=\'EUR\'&@dataInicial=\''.$inicio.'\'&@dataFinalCotacao=\''.$fim.'\'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json&$select=cotacaoCompra,dataHoraCotacao';
+    $dados_euro=json_decode(file_get_contents($url_dolar),true);
+    $cotacao_euro=$dados_euro["value"][0]["cotacaoCompra"];
+    //libra
+    $url_libra='https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?@moeda=\'GBP\'&@dataInicial=\''.$inicio.'\'&@dataFinalCotacao=\''.$fim.'\'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json&$select=cotacaoCompra,dataHoraCotacao';
+    $dados_libra=json_decode(file_get_contents($url_libra), true);
+    $cotacao_libra=$dados_libra["value"][0]["cotacaoCompra"];
+    //internacionalização para valores monetários
+    $padrao=numfmt_create("pt_BR",NumberFormatter::CURRENCY)
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -32,17 +52,29 @@
                             <tr>
                                 <th scope="row"><input type="radio" name="moeda" id="dolar" value="dolar"></th>
                                 <td><label for="dolar">Dólar</label></td>
-                                <td><label for="dolar">5.25</label></td>
+                                <td>
+                                    <label for="dolar">
+                                        <?php print numfmt_format_currency($padrao, $cotacao_dolar, "BRL") ?>
+                                    </label>
+                                </td>
                             </tr>
                             <tr>
                                 <th scope="row"><input type="radio" name="moeda" id="euro" value="euro"></th>
                                 <td><label for="euro">Euro</label></td>
-                                <td><label for="euro">5.66</label></td>
+                                <td>
+                                    <label for="euro">
+                                        <?php print numfmt_format_currency($padrao, $cotacao_euro, "EUR") ?>
+                                    </label>
+                                </td>
                             </tr>
                             <tr>
                                 <th scope="row"><input type="radio" name="moeda"  id="libra" value="libra"></th>
                                 <td><label for="libra">Libra</label></td>
-                                <td><label for="libra">6.42</label></td>
+                                <td>
+                                    <label for="libra">
+                                        <?php print numfmt_format_currency($padrao, $cotacao_libra, "GBP") ?>
+                                    </label>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -50,6 +82,7 @@
                 <button type="submit">converter</button>
             </form>
         </div>
+        <div id="aviso"><b>OBS:</b> A <b>cotação</b> utilizada vem da API do <b>Banco Central do Brasil<b></div>
     </div>
 </body>
 </html>
